@@ -30,7 +30,7 @@ Estas reglas no se relajan por comodidad ni por prisa. Se verifican en cada coma
 - **Los secretos se comparan con `crypto.timingSafeEqual`**, nunca con `===`. Aplica en particular al header compartido que valida las llamadas de n8n.
 - **El rol se lee de la tabla `profiles`**, nunca de un JWT ni de nada que venga del cliente.
 - **n8n nunca toca Postgres.** Todo pasa por los endpoints `/api/n8n/*` de la aplicación.
-- **El login es por Google (Supabase Auth) contra lista blanca.** Un login de Google válido no es suficiente: si no existe un `profile` activo para ese usuario (ver `SCRIPTS-SQL.md` sección 5), la sesión se cierra inmediatamente y se muestra "acceso no autorizado". Esta verificación ocurre en el servidor (Route Handler de callback), nunca solo en el cliente.
+- **El login es por email + contraseña (Supabase Auth) contra lista blanca.** *(Cambiado en Hito 2 a petición explícita del humano; originalmente era Google OAuth — ver `TECHNICAL_SPEC.md` sección 4 para el detalle de la desviación.)* Unas credenciales válidas no son suficientes: si no existe un `profile` activo para ese usuario (ver `SCRIPTS-SQL.md` sección 5), la sesión se cierra inmediatamente y se muestra "acceso no autorizado". Esta verificación ocurre en el servidor (`lib/dal.ts`), nunca solo en el cliente. No hay registro público: las cuentas de `auth.users` las provisiona el supervisor (mecanismo exacto pendiente de Hito 4, ver `TECHNICAL_SPEC.md` sección 5).
 
 ## 3. Disciplina de trabajo por hitos
 

@@ -10,7 +10,7 @@ Destinado a Claude Code Web. Modelo de datos, seguridad por fila, endpoints y va
   - `/web` — **CRM-123 Ventas**: app de escritorio para los 10 vendedores.
   - `/pwa` — **CRM-123 Supervisor**: PWA para los 2 supervisores, instalable.
 - **Base de datos y autenticación:** Supabase (proyecto `dbcrm123`).
-- **Autenticación:** Supabase Auth, proveedor Google OAuth únicamente. Sin registro público, sin email/contraseña.
+- **Autenticación:** Supabase Auth, email + contraseña. Sin OAuth de terceros, sin registro público — las cuentas de `auth.users` las provisiona el supervisor (ver sección 5; el mecanismo exacto de creación de cuenta con contraseña queda pendiente de definir en Hito 4).
 - **Automatización:** n8n Cloud, flujo `WF-CRM123`, dispara el resumen matutino llamando a un endpoint de `/pwa`.
 - **Correo:** Resend, remitente `onboarding@resend.dev`.
 - **Zona horaria fija de todo el sistema:** `Europe/Madrid`.
@@ -46,26 +46,30 @@ Resumen operativo (detalle exacto de cada política en `SCRIPTS-SQL.md` sección
 
 El rol de cada usuario se determina **siempre** consultando `profiles` en el servidor (vía las funciones `get_my_role()` / `is_supervisor()` de `SCRIPTS-SQL.md`), nunca leyendo claims del JWT ni parámetros enviados por el cliente.
 
-## 4. Autenticación y control de acceso (Google + lista blanca)
+## 4. Autenticación y control de acceso (email + contraseña, lista blanca)
+
+> **Desviación registrada respecto al diseño original:** `DESIGN_BRIEF.md` y la primera versión de este documento especificaban Google OAuth exclusivamente. A petición explícita del humano (Hito 2, en curso), se sustituyó por email + contraseña de Supabase Auth. El mecanismo de verificación contra lista blanca (sección 5, trigger de `SCRIPTS-SQL.md`) no cambia: es independiente del proveedor de autenticación.
 
 Flujo:
 
-1. El usuario pulsa "Entrar con Google" en `/web` o `/pwa`.
-2. Supabase Auth gestiona el OAuth de Google y crea (si no existe) una fila en `auth.users`.
-3. El trigger `on_auth_user_created` (ver `SCRIPTS-SQL.md` sección 5) busca el correo en `authorized_users`. Si existe y está activo, crea el `profile` correspondiente. Si no, no crea nada.
-4. El **Route Handler de callback** (`/auth/callback`), tras completar el login, hace un `select` a `profiles` para el `auth.uid()` actual, usando el cliente de servidor con la sesión del usuario (no la `service_role`).
-5. **Si no existe un `profile` activo:** el Route Handler cierra la sesión (`supabase.auth.signOut()`) y redirige a una pantalla de "acceso no autorizado", sin exponer detalles internos.
+1. El usuario introduce su correo y contraseña en `/web` o `/pwa` y el cliente llama a `supabase.auth.signInWithPassword()`.
+2. Si las credenciales son válidas, Supabase Auth crea la sesión. (A diferencia del flujo OAuth, aquí `auth.users` ya debe existir de antemano — no hay `/auth/callback` ni intercambio de código; ver la nota de aprovisionamiento de cuentas en la sección 5.)
+3. El trigger `on_auth_user_created` (ver `SCRIPTS-SQL.md` sección 5) ya corrió cuando se creó esa fila en `auth.users`: si el correo estaba en `authorized_users` y activo, existe un `profile`; si no, no existe ninguno.
+4. En la primera petición a una ruta protegida, el **Data Access Layer** (`lib/dal.ts`) hace un `select` a `profiles` para el `auth.uid()` actual, usando el cliente de servidor con la sesión del usuario (no la `service_role`).
+5. **Si no existe un `profile` activo:** el DAL cierra la sesión (`supabase.auth.signOut()`) y redirige a `/login?error=unauthorized`, sin exponer detalles internos.
 6. **Si existe:** continúa al tablero correspondiente según `role` (`vendedor` → `/web`, `supervisor` → ambas apps, con foco en `/pwa`).
 
-Esta verificación ocurre **en el servidor**, en cada sesión nueva; nunca se confía solo en el estado del cliente.
+Esta verificación ocurre **en el servidor**, en cada sesión nueva; nunca se confía solo en el estado del cliente. Credenciales incorrectas (`signInWithPassword` falla) se distinguen en pantalla de "cuenta no autorizada" (login válido pero sin `profile` activo) — ver `DESIGN_BRIEF.md` sección 2.1.
 
 ## 5. Gestión de usuarios (panel del supervisor)
 
 El supervisor administra la lista blanca desde `/pwa`, sin tocar Supabase directamente:
 
 - **Alta:** formulario con correo, nombre completo y rol (`vendedor`/`supervisor`) → `insert` en `authorized_users` vía Server Action, usando el cliente autenticado del supervisor (RLS ya exige `is_supervisor()`). Se registra un evento en `audit_log`.
-- **Baja:** no se borra la fila; se marca `active = false` en `authorized_users` **y** en `profiles` si ya existía. Un usuario desactivado no puede volver a entrar (el trigger no reactiva, y el Route Handler del paso 4 anterior también valida `active = true` en `profiles`). Se registra en `audit_log`.
+- **Baja:** no se borra la fila; se marca `active = false` en `authorized_users` **y** en `profiles` si ya existía. Un usuario desactivado no puede volver a entrar (el trigger no reactiva, y el paso 4 de la sección 4 también valida `active = true` en `profiles`). Se registra en `audit_log`.
 - El supervisor no puede desactivarse a sí mismo si es el único supervisor activo (validación en el Server Action, para no dejar el sistema sin administrador).
+
+> **Pendiente de definir (abierto por el cambio de Google a email/contraseña):** con OAuth, cualquier cuenta de Google podía intentar el login y el trigger decidía si le creaba `profile`; con email/contraseña, la fila en `auth.users` **debe existir de antemano con una contraseña**, y Supabase Auth no la crea sola. El alta de la sección anterior, tal como está descrita, solo inserta en `authorized_users` — no basta. Falta decidir en Hito 4 el mecanismo real de aprovisionamiento (opciones típicas: `supabase.auth.admin.createUser()` con contraseña temporal, o `admin.inviteUserByEmail()`/enlace de invitación, ambos requieren `service_role` en servidor). Hasta entonces, para las pruebas de Hito 2, las cuentas de prueba se crean manualmente desde el panel de Supabase (Authentication → Users → Add user).
 
 ## 6. Endpoints de la aplicación
 
@@ -108,8 +112,7 @@ Todos los endpoints de escritura usan Server Actions o Route Handlers de Next.js
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `/web`, `/pwa` (cliente y servidor) | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `/web`, `/pwa` (cliente y servidor) | Clave pública, respeta RLS |
-| `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor, solo `/pwa` (endpoint de n8n) | Clave con acceso total; nunca en el cliente |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Configuración del proveedor OAuth en Supabase Auth | Credenciales de Google Cloud para el login |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo servidor, `/pwa` (endpoint de n8n; también necesaria si Hito 4 usa `auth.admin.createUser()` para aprovisionar cuentas — sección 5) | Clave con acceso total; nunca en el cliente |
 | `N8N_SHARED_SECRET` | Solo servidor, `/pwa` | Secreto compartido para validar llamadas de n8n |
 | `RESEND_API_KEY` | Solo servidor, `/pwa` | Envío de correos del resumen matutino |
 | `RESEND_FROM_EMAIL` | Solo servidor, `/pwa` | `onboarding@resend.dev` |

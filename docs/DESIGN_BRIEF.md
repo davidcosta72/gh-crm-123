@@ -14,8 +14,10 @@ Destinado a Claude Design. Sin código ni base de datos: solo pantallas, informa
 ## 2. CRM-123 Ventas (escritorio) — pantallas
 
 ### 2.1 Login
-- Único botón "Entrar con Google".
-- Estado de error: "Acceso no autorizado" si el correo no está en la lista del equipo (sin detalles técnicos).
+- Campos de correo y contraseña + botón "Entrar". *(Cambiado en Hito 2: el diseño original de Claude Design especificaba un único botón "Entrar con Google" — ver `design/README.handoff.md` para el mockup original y `TECHNICAL_SPEC.md` sección 4 para el detalle de la desviación.)*
+- Estado de error — dos casos distintos, sin detalles técnicos:
+  - Credenciales incorrectas: "Correo o contraseña incorrectos."
+  - Login válido pero sin cuenta activa en el equipo: "Acceso no autorizado."
 
 ### 2.2 Tablero del día (pantalla de inicio)
 - **Información mostrada:**
@@ -87,11 +89,11 @@ Destinado a Claude Design. Sin código ni base de datos: solo pantallas, informa
 1. **Vendedor completa su día:** entra → ve tareas de hoy → completa una llamada → si corresponde, avanza la oportunidad de etapa → si la mueve a "Perdida", indica el motivo → el tablero se actualiza.
 2. **Vendedor registra un cliente nuevo y su primera oportunidad:** desde Clientes, crea cliente (teléfono obligatorio) → desde el detalle del cliente, crea oportunidad vinculada.
 3. **Supervisor reasigna trabajo:** entra a Detalle por vendedor → localiza la oportunidad → reasigna a otro vendedor → queda reflejado de inmediato en el tablero del nuevo dueño.
-4. **Supervisor da de alta a un vendedor nuevo:** Gestión de usuarios → Alta → el vendedor ya puede entrar con su cuenta de Google la próxima vez que lo intente.
+4. **Supervisor da de alta a un vendedor nuevo:** Gestión de usuarios → Alta → el vendedor ya puede entrar con su correo y contraseña la próxima vez que lo intente. *(El mecanismo de creación de la cuenta con contraseña queda pendiente de definir — ver `TECHNICAL_SPEC.md` sección 5.)*
 5. **Supervisor fuerza el envío del resumen:** Resumen matutino → "Enviar ahora" → confirmación.
 
 ## 5. Fuera de alcance para este diseño
 
 - Sin pantalla de "papelera" ni de recuperación de elementos borrados (no existe borrado físico).
 - Sin selector de zona horaria ni de moneda (fijos: Europe/Madrid, EUR).
-- Sin registro público ni recuperación de contraseña (el acceso es solo Google).
+- Sin registro público. *(Nota Hito 2: al cambiar de Google a email/contraseña, "sin recuperación de contraseña" deja de ser gratis — antes no aplicaba porque no había contraseña. Si el equipo necesita poder resetear una contraseña olvidada, es una decisión pendiente para Hito 4, no cubierta todavía por ningún endpoint ni pantalla.)*

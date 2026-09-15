@@ -26,9 +26,9 @@ export default async function LoginPage({
           <span className="tag tag-accent">Ventas</span>
         </div>
         <p className="text-muted" style={{ margin: 0, fontSize: 14 }}>
-          Acceso solo con la cuenta de Google del equipo.
+          Accede con el correo y la contraseña de tu equipo.
         </p>
-        <LoginForm showError={error === 'unauthorized'} />
+        <LoginForm showUnauthorized={error === 'unauthorized'} />
       </div>
     </div>
   )

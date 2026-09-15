@@ -32,7 +32,7 @@ No hay variables que el humano deba actualizar en este hito.
 
 **Ejecutor:** Claude Code Web, tomando en cuenta `CLAUDE.md` y `TECHNICAL_SPEC.md`.
 
-**Qué construye:** del proyecto, solo el ingreso (login con Google + verificación contra lista blanca), el armazón de navegación de ambas apps, y el tablero del día vacío (sin datos reales todavía, solo el estado "vacío" de `DESIGN_BRIEF.md`).
+**Qué construye:** del proyecto, solo el ingreso (login con email + contraseña + verificación contra lista blanca — ver nota de desviación en `TECHNICAL_SPEC.md` sección 4), el armazón de navegación de ambas apps, y el tablero del día vacío (sin datos reales todavía, solo el estado "vacío" de `DESIGN_BRIEF.md`).
 
 ### Variables de entorno necesarias para este hito
 
@@ -40,9 +40,8 @@ No hay variables que el humano deba actualizar en este hito.
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Panel de Supabase → proyecto `dbcrm123` → Settings → API → "Project URL" |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Mismo panel → API → "anon public" key |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Cloud Console → crear un proyecto OAuth → tipo "Web application" → añadir como URI de redirección autorizada la que indique Supabase Auth (Settings → Authentication → Providers → Google) → copiar Client ID y Client Secret al panel de Supabase, en el mismo lugar |
 
-Claude Code Web debe verificar, antes de continuar, que estas tres variables/credenciales están configuradas tanto en Supabase (proveedor Google) como en los dos proyectos de Vercel (uno por app).
+Claude Code Web debe verificar, antes de continuar, que estas variables están configuradas en los dos proyectos de Vercel (uno por app). Para probar el login hace falta además al menos una cuenta de prueba creada manualmente en Supabase (Authentication → Users → Add user) con su fila correspondiente en `authorized_users` — ver la nota de aprovisionamiento pendiente en `TECHNICAL_SPEC.md` sección 5.
 
 ### Procedimiento
 1. Crear el esqueleto Next.js en `/web` y `/pwa` dentro de la rama `gh-crm-123`.
