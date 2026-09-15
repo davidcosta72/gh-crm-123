@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-616f3116-4d15-4371-a357-18fd50e77f3f/styles.css">
+<script src="_ds/organic-616f3116-4d15-4371-a357-18fd50e77f3f/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--color-bg); }
+  /* Supervisor habla con la segunda voz del sistema: los tokens de acento apuntan a la rampa sage. */
+  :root {
+    --color-accent: #7a8a5e;
+    --color-accent-100: #f0fae1; --color-accent-200: #e1eecc; --color-accent-300: #ccdbb2;
+    --color-accent-400: #aebf92; --color-accent-500: #8fa073; --color-accent-600: #728157;
+    --color-accent-700: #56633f; --color-accent-800: #3d472b; --color-accent-900: #272e1b;
+    --color-accent-2: #c67139;
+    --color-accent-2-100: #fff2eb; --color-accent-2-200: #ffe1d0; --color-accent-2-300: #ffc6a5;
+    --color-accent-2-400: #f6a06b; --color-accent-2-500: #d67f48; --color-accent-2-600: #b2622d;
+    --color-accent-2-700: #8c491a; --color-accent-2-800: #643312; --color-accent-2-900: #402310;
+  }
+  a { color: var(--color-accent-700); }
+  a:hover { color: var(--color-accent); }
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:grid;place-items:center;padding:var(--space-8);background:var(--color-bg)">
+    <div style="width:min(420px,100%);display:flex;flex-direction:column;gap:var(--space-4)">
+      <div style="display:flex;align-items:baseline;gap:var(--space-2)">
+        <h2 style="margin:0">CRM-123</h2>
+        <span class="tag tag-accent">Supervisor</span>
+      </div>
+      <p class="text-muted" style="margin:0;font-size:14px">Acceso solo con la cuenta de Google del equipo.</p>
+      <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+        <button class="btn btn-primary btn-block" onClick="{{ login }}" style="min-height:48px;font-size:16px">Entrar con Google</button>
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-accent-2-200)">
+            <div style="width:8px;height:8px;flex:none;margin-top:7px;border-radius:50%;background:var(--color-accent-2-700)"></div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--color-accent-2-800)">Acceso no autorizado</div>
+              <div style="font-size:13px;color:var(--color-accent-2-800);opacity:.85">Esta cuenta no pertenece al equipo.</div>
+            </div>
+          </div>
+        </sc-if>
+        <button class="btn btn-ghost" onClick="{{ toggleLoginError }}" style="align-self:flex-start;font-size:12px">Ver estado de error</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;background:var(--color-bg);font-family:var(--font-body)">
+  <header style="position:sticky;top:0;z-index:5;background:var(--color-bg);padding:var(--space-4) var(--space-6) var(--space-3);display:flex;flex-direction:column;gap:var(--space-3);border-bottom:1px solid var(--color-divider)">
+    <div style="max-width:980px;margin:0 auto;width:100%;display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
+      <div style="font-family:var(--font-heading);font-size:20px">CRM-123</div>
+      <span class="tag tag-accent">Supervisor</span>
+      <div class="text-muted" style="margin-left:auto;font-size:13px">Carmen Ibáñez</div>
+      <button class="btn btn-secondary" onClick="{{ logout }}" style="font-size:12px;padding:4px 12px">Salir</button>
+    </div>
+    <nav style="max-width:980px;margin:0 auto;width:100%;display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="3">
+        <button onClick="{{ item.go }}" style="{{ item.style }}">{{ item.label }}</button>
+      </sc-for>
+    </nav>
+  </header>
+
+  <main style="max-width:980px;margin:0 auto;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-8)">
+
+    <sc-if value="{{ isPanel }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-8)">
+        <section style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <div>
+            <h3 style="margin:0">Panel del equipo</h3>
+            <div class="text-muted" style="font-size:13px">14/09/2026 · 10 vendedores activos</div>
+          </div>
+          <div class="card elev-sm" style="gap:var(--space-4);padding:var(--space-6)">
+            <div style="display:flex;gap:var(--space-8);flex-wrap:wrap">
+              <div>
+                <div class="card-kicker">Pipeline abierto</div>
+                <div style="font-family:var(--font-heading);font-size:42px;line-height:1">{{ pipelineTotalEur }}</div>
+              </div>
+              <div>
+                <div class="card-kicker">Oportunidades</div>
+                <div style="font-family:var(--font-heading);font-size:42px;line-height:1">{{ pipelineTotalCount }}</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-2)">
+              <sc-for list="{{ pipeline }}" as="p" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:var(--space-4)">
+                  <div style="width:150px;flex:none;font-size:14px">{{ p.label }}</div>
+                  <div style="flex:1;min-width:0;height:14px;border-radius:999px;background:var(--color-neutral-200);overflow:hidden">
+                    <div style="{{ p.barStyle }}"></div>
+                  </div>
+                  <div style="width:60px;flex:none;text-align:right;font-size:14px;font-variant-numeric:tabular-nums">{{ p.count }}</div>
+                  <div style="width:130px;flex:none;text-align:right;font-size:14px;font-variant-numeric:tabular-nums">{{ p.amount }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Tareas pendientes por vendedor</h6>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:var(--space-3)">
+            <sc-for list="{{ sellers }}" as="s" hint-placeholder-count="6">
+              <button class="card elev-sm" onClick="{{ s.open }}" style="border:0;text-align:left;cursor:pointer;gap:var(--space-2);padding:var(--space-4)">
+                <div class="card-title">{{ s.name }}</div>
+                <div style="display:flex;align-items:center;gap:var(--space-3)">
+                  <div style="display:flex;align-items:baseline;gap:6px">
+                    <div style="font-family:var(--font-heading);font-size:32px;line-height:1">{{ s.pending }}</div>
+                    <div class="text-muted" style="font-size:12px">pendientes</div>
+                  </div>
+                  <sc-if value="{{ s.hasOverdue }}" hint-placeholder-val="{{ true }}">
+                    <span class="tag tag-accent-2">{{ s.overdueLabel }}</span>
+                  </sc-if>
+                </div>
+                <div class="card-meta"><span>{{ s.oppLabel }}</span></div>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Ganadas en septiembre</h6>
+          <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+            <table class="table">
+              <thead><tr><th style="width:44px">#</th><th>Vendedor</th><th style="text-align:right;white-space:nowrap">Ganadas</th><th style="text-align:right;white-space:nowrap">Valor ganado</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ ranking }}" as="r" hint-placeholder-count="5">
+                  <tr onClick="{{ r.open }}" style="cursor:pointer">
+                    <td class="text-muted">{{ r.pos }}</td>
+                    <td style="font-weight:700">{{ r.name }}</td>
+                    <td style="text-align:right;white-space:nowrap">{{ r.won }}</td>
+                    <td style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">{{ r.amount }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSeller }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+        <button class="btn btn-ghost" onClick="{{ backToPanel }}" style="align-self:flex-start">← Panel del equipo</button>
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">{{ seller.name }}</h3>
+            <div class="text-muted" style="font-size:13px">{{ seller.email }} · Vendedor · modo consulta</div>
+          </div>
+          <span class="tag tag-neutral">Solo lectura</span>
+        </header>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">
+            <h6 style="margin:0">Sus oportunidades</h6>
+            <div class="text-muted" style="font-size:13px">{{ seller.oppSummary }}</div>
+          </div>
+          <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+            <table class="table">
+              <thead><tr><th>Cliente</th><th>Título</th>
+                <sc-if value="{{ showOwner }}" hint-placeholder-val="{{ true }}">
+                  <th style="white-space:nowrap">Vendedor</th>
+                </sc-if>
+                <th style="text-align:right;white-space:nowrap">Valor</th><th>Etapa</th><th></th></tr></thead>
+              <tbody>
+                <sc-for list="{{ seller.opps }}" as="o" hint-placeholder-count="5">
+                  <tr>
+                    <td style="font-weight:700">{{ o.clientName }}</td>
+                    <td>{{ o.title }}</td>
+                    <sc-if value="{{ showOwner }}" hint-placeholder-val="{{ true }}">
+                      <td style="white-space:nowrap">{{ o.ownerName }}</td>
+                    </sc-if>
+                    <td style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">{{ o.amount }}</td>
+                    <td><span class="{{ o.stageTag }}" style="white-space:nowrap">{{ o.stageLabel }}</span></td>
+                    <td style="text-align:right;white-space:nowrap"><button class="btn btn-secondary" onClick="{{ o.reassign }}" style="font-size:12px;padding:4px 12px">Reasignar</button></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--space-6);align-items:start">
+          <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <h6 style="margin:0">Tareas pendientes</h6>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <sc-for list="{{ seller.tasks }}" as="t" hint-placeholder-count="3">
+                <div class="card" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--space-2) var(--space-3);padding:var(--space-3) var(--space-4)">
+                  <span class="{{ t.typeTag }}" style="flex:none">{{ t.typeLabel }}</span>
+                  <div style="flex:1 1 200px;min-width:0;font-size:14px;text-wrap:pretty">{{ t.description }}</div>
+                  <span class="{{ t.dueTag }}" style="white-space:nowrap">{{ t.dueLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+          <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <h6 style="margin:0">Historial reciente</h6>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3);padding-left:var(--space-3);border-left:2px solid var(--color-accent-300)">
+              <sc-for list="{{ seller.activities }}" as="a" hint-placeholder-count="4">
+                <div>
+                  <div style="font-size:14px">{{ a.text }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ a.when }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">Gestión de usuarios</h3>
+            <div class="text-muted" style="font-size:13px">{{ usersSummary }}</div>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openNewUser }}">Alta de usuario</button>
+        </header>
+        <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+          <table class="table">
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="12">
+                <tr>
+                  <td style="font-weight:700">{{ u.fullName }}</td>
+                  <td class="text-muted" style="font-size:13px">{{ u.email }}</td>
+                  <td><span class="{{ u.roleTag }}" style="white-space:nowrap">{{ u.roleLabel }}</span></td>
+                  <td><span class="{{ u.stateTag }}" style="white-space:nowrap">{{ u.stateLabel }}</span></td>
+                  <td style="text-align:right;white-space:nowrap">
+                    <sc-if value="{{ u.canDeactivate }}" hint-placeholder-val="{{ true }}">
+                      <button class="btn btn-secondary" onClick="{{ u.deactivate }}" style="font-size:12px;padding:4px 12px">Desactivar</button>
+                    </sc-if>
+                    <sc-if value="{{ u.canActivate }}" hint-placeholder-val="{{ false }}">
+                      <button class="btn btn-ghost" onClick="{{ u.activate }}" style="font-size:12px">Reactivar</button>
+                    </sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isResumen }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-6);max-width:640px">
+        <header>
+          <h3 style="margin:0">Resumen matutino</h3>
+          <div class="text-muted" style="font-size:13px">Envío automático al equipo</div>
+        </header>
+        <div class="card elev-sm" style="gap:var(--space-4);padding:var(--space-6)">
+          <div class="card-kicker">Hora programada</div>
+          <div style="display:flex;align-items:baseline;gap:var(--space-3)">
+            <div style="font-family:var(--font-heading);font-size:42px;line-height:1">07:00</div>
+            <div class="text-muted" style="font-size:14px">Europe/Madrid</div>
+          </div>
+          <button class="btn btn-primary" onClick="{{ sendNow }}" disabled="{{ sending }}" style="align-self:flex-start;min-height:44px">{{ sendLabel }}</button>
+          <sc-if value="{{ sentOk }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:var(--space-2);align-items:center;padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-accent-100);font-size:14px;color:var(--color-accent-800)">Resumen enviado a los 10 vendedores.</div>
+          </sc-if>
+          <sc-if value="{{ sentError }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-accent-2-200)">
+              <div style="font-size:14px;color:var(--color-accent-2-800)">No se ha podido enviar el resumen. Inténtalo de nuevo.</div>
+              <button class="btn btn-secondary" onClick="{{ sendNow }}" style="align-self:flex-start;font-size:12px;padding:4px 12px">Reintentar</button>
+            </div>
+          </sc-if>
+        </div>
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Últimos envíos</h6>
+          <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+            <table class="table">
+              <thead><tr><th>Fecha y hora</th><th>Disparo</th></tr></thead>
+              <tbody>
+                <sc-for list="{{ sendLog }}" as="l" hint-placeholder-count="5">
+                  <tr><td style="font-variant-numeric:tabular-nums;white-space:nowrap">{{ l.when }}</td><td><span class="{{ l.tag }}">{{ l.kind }}</span></td></tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+</sc-if>
+
+<sc-if value="{{ dlgReassign }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Reasignar oportunidad</div>
+      <div class="dialog-body">{{ reassignOppLabel }}</div>
+      <div class="field">
+        <label>Nuevo dueño</label>
+        <select class="input" name="new_owner" value="{{ form.new_owner }}" onChange="{{ setField }}">
+          <sc-for list="{{ ownerOptions }}" as="o" hint-placeholder-count="6">
+            <option value="{{ o.id }}">{{ o.name }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveReassign }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ dlgUser }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Alta de usuario</div>
+      <div class="dialog-body">Podrá entrar con su cuenta de Google en el próximo intento.</div>
+      <div class="field">
+        <label>Correo</label>
+        <input class="input" name="email" placeholder="nombre.apellido@crm123.es" value="{{ form.email }}" onChange="{{ setField }}">
+      </div>
+      <div class="field">
+        <label>Nombre completo</label>
+        <input class="input" name="full_name" value="{{ form.full_name }}" onChange="{{ setField }}">
+      </div>
+      <div class="field">
+        <label>Rol</label>
+        <div class="seg">
+          <label class="seg-opt"><input type="radio" name="role" value="vendedor" checked="{{ roleVendedor }}" onChange="{{ setField }}">Vendedor</label>
+          <label class="seg-opt"><input type="radio" name="role" value="supervisor" checked="{{ roleSupervisor }}" onChange="{{ setField }}">Supervisor</label>
+        </div>
+      </div>
+      <sc-if value="{{ userInvalid }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px;color:var(--color-accent-2-800)">Correo y nombre son obligatorios.</div>
+      </sc-if>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveUser }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ dlgOff }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Desactivar usuario</div>
+      <div class="dialog-body">{{ offLabel }} dejará de tener acceso. Sus clientes, oportunidades y su historial se conservan.</div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveOff }}" disabled="{{ saving }}">{{ offLabelBtn }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:860},&quot;mostrarDueno&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Oportunidades&quot;}}">
+const STAGES = [
+  ['nuevo', 'Nuevo'], ['contactado', 'Contactado'], ['propuesta_enviada', 'Propuesta enviada'],
+  ['negociacion', 'Negociación'], ['ganada', 'Ganada'], ['perdida', 'Perdida']
+];
+const STAGE_LABEL = Object.fromEntries(STAGES);
+const TYPE_LABEL = { llamada: 'Llamada', reunion: 'Reunión', tarea: 'Tarea' };
+
+const PROFILES = [
+  { id: 'p1', full_name: 'Elena Prados', email: 'elena.prados@crm123.es', role: 'vendedor', active: true },
+  { id: 'p2', full_name: 'Rubén Ortiz', email: 'ruben.ortiz@crm123.es', role: 'vendedor', active: true },
+  { id: 'p3', full_name: 'Marta Cebrián', email: 'marta.cebrian@crm123.es', role: 'vendedor', active: true },
+  { id: 'p4', full_name: 'Iván Salas', email: 'ivan.salas@crm123.es', role: 'vendedor', active: true },
+  { id: 'p5', full_name: 'Nuria Belmonte', email: 'nuria.belmonte@crm123.es', role: 'vendedor', active: true },
+  { id: 'p6', full_name: 'Sergio Vilches', email: 'sergio.vilches@crm123.es', role: 'vendedor', active: true },
+  { id: 'p7', full_name: 'Laura Maroto', email: 'laura.maroto@crm123.es', role: 'vendedor', active: true },
+  { id: 'p8', full_name: 'Álvaro Quintana', email: 'alvaro.quintana@crm123.es', role: 'vendedor', active: true },
+  { id: 'p9', full_name: 'Patricia Deán', email: 'patricia.dean@crm123.es', role: 'vendedor', active: true },
+  { id: 'p10', full_name: 'Tomás Herrero', email: 'tomas.herrero@crm123.es', role: 'vendedor', active: false },
+  { id: 'p11', full_name: 'Carmen Ibáñez', email: 'carmen.ibanez@crm123.es', role: 'supervisor', active: true },
+  { id: 'p12', full_name: 'Joaquín Estévez', email: 'joaquin.estevez@crm123.es', role: 'supervisor', active: true }
+];
+
+const CLIENT_NAME = {
+  c1: 'Talleres Nogueira S.L.', c2: 'Panadería El Trigal', c3: 'Cerámica Alcázar', c4: 'Bodegas Valdeaguilar',
+  c5: 'Óptica Lumen', c6: 'Ferretería Mendoza e Hijos', c7: 'Clínica Dental Sant Jordi', c8: 'Transportes Arenales',
+  c9: 'Viveros Campoamor', c10: 'Rótulos Ávila', c11: 'Congelados Ribeira', c12: 'Academia Montseny',
+  c13: 'Hostal Puerta Nueva', c14: 'Autobuses Jarama', c15: 'Lavandería Duero'
+};
+
+const OPPS = [
+  { id: 'o1', owner_id: 'p1', client_id: 'c1', title: 'Renovación de maquinaria de taller', stage: 'negociacion', amount_eur: 28400 },
+  { id: 'o2', owner_id: 'p1', client_id: 'c2', title: 'Equipamiento del tercer local', stage: 'propuesta_enviada', amount_eur: 15750.5 },
+  { id: 'o3', owner_id: 'p1', client_id: 'c3', title: 'Horno de esmaltado', stage: 'contactado', amount_eur: 9200 },
+  { id: 'o4', owner_id: 'p1', client_id: 'c4', title: 'Línea de embotellado', stage: 'propuesta_enviada', amount_eur: 62000 },
+  { id: 'o5', owner_id: 'p1', client_id: 'c6', title: 'Sustitución de estanterías', stage: 'ganada', amount_eur: 4320 },
+  { id: 'o6', owner_id: 'p2', client_id: 'c8', title: 'Mantenimiento de flota 2027', stage: 'negociacion', amount_eur: 45900 },
+  { id: 'o7', owner_id: 'p2', client_id: 'c9', title: 'Riego para invernadero 3', stage: 'nuevo', amount_eur: 18300 },
+  { id: 'o8', owner_id: 'p2', client_id: 'c10', title: 'Rotulación de dos furgonetas', stage: 'ganada', amount_eur: 6100 },
+  { id: 'o9', owner_id: 'p3', client_id: 'c11', title: 'Cámara de congelación', stage: 'propuesta_enviada', amount_eur: 54200 },
+  { id: 'o10', owner_id: 'p3', client_id: 'c12', title: 'Aulas con pizarra digital', stage: 'contactado', amount_eur: 12800 },
+  { id: 'o11', owner_id: 'p3', client_id: 'c13', title: 'Reforma de recepción', stage: 'ganada', amount_eur: 9750 },
+  { id: 'o12', owner_id: 'p4', client_id: 'c14', title: 'Renovación de 4 autobuses', stage: 'negociacion', amount_eur: 96000 },
+  { id: 'o13', owner_id: 'p4', client_id: 'c15', title: 'Secadoras industriales', stage: 'nuevo', amount_eur: 21400 },
+  { id: 'o14', owner_id: 'p5', client_id: 'c5', title: 'Dos gabinetes de graduación', stage: 'propuesta_enviada', amount_eur: 7480 },
+  { id: 'o15', owner_id: 'p5', client_id: 'c7', title: 'Segunda sala de tratamiento', stage: 'perdida', amount_eur: 31500 },
+  { id: 'o16', owner_id: 'p5', client_id: 'c9', title: 'Sombreo de invernadero 1', stage: 'ganada', amount_eur: 8400 },
+  { id: 'o17', owner_id: 'p6', client_id: 'c10', title: 'Tótem luminoso', stage: 'contactado', amount_eur: 14600 },
+  { id: 'o18', owner_id: 'p6', client_id: 'c13', title: 'Climatización de planta alta', stage: 'nuevo', amount_eur: 26700 },
+  { id: 'o19', owner_id: 'p7', client_id: 'c11', title: 'Túnel de ultracongelado', stage: 'negociacion', amount_eur: 78500 },
+  { id: 'o20', owner_id: 'p7', client_id: 'c12', title: 'Laboratorio de idiomas', stage: 'ganada', amount_eur: 16900 },
+  { id: 'o21', owner_id: 'p8', client_id: 'c14', title: 'Taller de mantenimiento propio', stage: 'propuesta_enviada', amount_eur: 41200 },
+  { id: 'o22', owner_id: 'p8', client_id: 'c15', title: 'Plancha de rodillo', stage: 'contactado', amount_eur: 11900 },
+  { id: 'o23', owner_id: 'p9', client_id: 'c1', title: 'Segundo puente elevador', stage: 'nuevo', amount_eur: 17300 },
+  { id: 'o24', owner_id: 'p9', client_id: 'c4', title: 'Etiquetadora de reserva', stage: 'ganada', amount_eur: 11250 },
+  { id: 'o25', owner_id: 'p9', client_id: 'c6', title: 'Mostrador de atención', stage: 'perdida', amount_eur: 5400 }
+];
+
+const TASKS = [
+  { id: 't1', owner_id: 'p1', type: 'llamada', description: 'Confirmar condiciones de pago del pedido', overdue: false, due: '14/09/2026 09:30' },
+  { id: 't2', owner_id: 'p1', type: 'reunion', description: 'Visita al obrador con el hijo del titular', overdue: false, due: '14/09/2026 11:00' },
+  { id: 't3', owner_id: 'p1', type: 'llamada', description: 'Devolver llamada sobre el plazo de entrega', overdue: true, due: '11/09/2026 17:00' },
+  { id: 't4', owner_id: 'p2', type: 'tarea', description: 'Preparar comparativa de precios de flota', overdue: false, due: '14/09/2026 16:00' },
+  { id: 't5', owner_id: 'p2', type: 'llamada', description: 'Cierre del riego de invernadero 3', overdue: true, due: '10/09/2026 12:00' },
+  { id: 't6', owner_id: 'p3', type: 'reunion', description: 'Medición en cámara de congelación', overdue: false, due: '14/09/2026 10:30' },
+  { id: 't7', owner_id: 'p3', type: 'tarea', description: 'Enviar plano de aulas', overdue: false, due: '15/09/2026 09:00' },
+  { id: 't8', owner_id: 'p4', type: 'llamada', description: 'Financiación de los autobuses', overdue: true, due: '09/09/2026 15:00' },
+  { id: 't9', owner_id: 'p5', type: 'llamada', description: 'Segundo intento con Óptica Lumen', overdue: false, due: '15/09/2026 12:30' },
+  { id: 't10', owner_id: 'p6', type: 'tarea', description: 'Medidas del tótem luminoso', overdue: false, due: '14/09/2026 13:00' },
+  { id: 't11', owner_id: 'p7', type: 'reunion', description: 'Visita técnica al túnel', overdue: false, due: '16/09/2026 11:00' },
+  { id: 't12', owner_id: 'p7', type: 'llamada', description: 'Confirmar presupuesto del laboratorio', overdue: true, due: '12/09/2026 17:30' },
+  { id: 't13', owner_id: 'p8', type: 'tarea', description: 'Revisar pliego del taller propio', overdue: false, due: '14/09/2026 18:00' },
+  { id: 't14', owner_id: 'p9', type: 'llamada', description: 'Retomar el segundo puente elevador', overdue: false, due: '15/09/2026 10:00' }
+];
+
+const ACTIVITIES = [
+  { id: 'a1', actor_id: 'p1', text: 'Etapa cambiada: Propuesta enviada → Negociación · Talleres Nogueira S.L.', when: '13/09/2026 16:20' },
+  { id: 'a2', actor_id: 'p1', text: 'Reunión completada: revisión técnica en el taller', when: '11/09/2026 12:05' },
+  { id: 'a3', actor_id: 'p1', text: 'Tarea creada: confirmar condiciones de pago', when: '11/09/2026 12:07' },
+  { id: 'a4', actor_id: 'p1', text: 'Etapa cambiada: Contactado → Propuesta enviada · Bodegas Valdeaguilar', when: '01/09/2026 11:30' },
+  { id: 'a5', actor_id: 'p2', text: 'Llamada completada: seguimiento de la flota', when: '13/09/2026 09:15' },
+  { id: 'a6', actor_id: 'p2', text: 'Etapa cambiada: Contactado → Negociación · Transportes Arenales', when: '08/09/2026 10:02' },
+  { id: 'a7', actor_id: 'p3', text: 'Etapa cambiada: Negociación → Ganada · Hostal Puerta Nueva', when: '12/09/2026 18:40' },
+  { id: 'a8', actor_id: 'p4', text: 'Tarea creada: financiación de los autobuses', when: '05/09/2026 08:30' },
+  { id: 'a9', actor_id: 'p5', text: 'Etapa cambiada: Negociación → Perdida · Clínica Dental Sant Jordi', when: '24/08/2026 18:02' },
+  { id: 'a10', actor_id: 'p7', text: 'Etapa cambiada: Propuesta enviada → Ganada · Academia Montseny', when: '09/09/2026 13:20' }
+];
+
+const SEND_LOG = [
+  { when: '14/09/2026 07:00', kind: 'Automático' },
+  { when: '13/09/2026 07:00', kind: 'Automático' },
+  { when: '12/09/2026 09:12', kind: 'Manual' },
+  { when: '12/09/2026 07:00', kind: 'Automático' },
+  { when: '11/09/2026 07:00', kind: 'Automático' }
+];
+
+const eur = (v) => (v === null || v === undefined)
+  ? '—'
+  : Number(v).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' }) + ' €';
+const eurShort = (v) => Number(v).toLocaleString('es-ES', { maximumFractionDigits: 0, useGrouping: 'always' }) + ' €';
+const stageTag = (s) => 'tag ' + (s === 'ganada' ? 'tag-accent' : s === 'perdida' ? 'tag-outline' : (s === 'propuesta_enviada' || s === 'negociacion') ? 'tag-accent-2' : 'tag-neutral');
+
+const PILL = 'font-family:var(--font-body);font-size:14px;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--color-divider);background:transparent;color:var(--color-text)';
+const PILL_ON = 'font-family:var(--font-body);font-size:14px;cursor:pointer;padding:8px 16px;border-radius:999px;border:1px solid var(--color-accent);background:var(--color-accent);color:var(--color-bg)';
+
+class Component extends DCLogic {
+  state = {
+    view: 'login', loginError: false,
+    profiles: PROFILES, opps: OPPS, activities: ACTIVITIES, sendLog: SEND_LOG,
+    sellerId: null, dialog: null, form: {}, saving: false, invalid: false,
+    reassignId: null, offId: null, sending: false, sendState: null, seq: 1
+  };
+
+  go = (view) => () => this.setState({ view });
+  profile = (id) => this.state.profiles.find(p => p.id === id);
+  openSeller = (id) => () => this.setState({ view: 'seller', sellerId: id });
+  setField = (e) => { const { name, value } = e.target; this.setState(s => ({ form: { ...s.form, [name]: value } })); };
+  closeDialog = () => this.setState({ dialog: null, form: {}, saving: false, invalid: false });
+
+  finish(fn) {
+    this.setState({ saving: true });
+    setTimeout(() => { fn(); this.setState({ dialog: null, form: {}, saving: false, invalid: false }); }, 700);
+  }
+
+  saveReassign = () => {
+    const id = this.state.reassignId;
+    const o = this.state.opps.find(x => x.id === id);
+    const newOwner = this.state.form.new_owner;
+    if (!o || !newOwner) return;
+    this.finish(() => {
+      const from = this.profile(o.owner_id).full_name;
+      const to = this.profile(newOwner).full_name;
+      this.setState(s => ({
+        opps: s.opps.map(x => x.id === id ? { ...x, owner_id: newOwner } : x),
+        activities: [{ id: 'an' + s.seq, actor_id: 'p11', text: 'Oportunidad reasignada de ' + from + ' a ' + to + ' · ' + CLIENT_NAME[o.client_id], when: '14/09/2026 12:0' + (s.seq % 10) }, ...s.activities],
+        seq: s.seq + 1
+      }));
+    });
+  };
+
+  saveUser = () => {
+    const f = this.state.form;
+    if (!(f.email || '').trim() || !(f.full_name || '').trim()) { this.setState({ invalid: true }); return; }
+    this.finish(() => {
+      this.setState(s => ({
+        profiles: [...s.profiles, { id: 'pn' + s.seq, full_name: f.full_name.trim(), email: f.email.trim(), role: f.role || 'vendedor', active: true }],
+        seq: s.seq + 1
+      }));
+    });
+  };
+
+  saveOff = () => {
+    const id = this.state.offId;
+    this.finish(() => this.setState(s => ({ profiles: s.profiles.map(p => p.id === id ? { ...p, active: false } : p) })));
+  };
+
+  sendNow = () => {
+    this.setState({ sending: true, sendState: null });
+    setTimeout(() => {
+      this.setState(s => ({
+        sending: false, sendState: 'ok',
+        sendLog: [{ when: '14/09/2026 12:05', kind: 'Manual' }, ...s.sendLog]
+      }));
+    }, 900);
+  };
+
+  renderVals() {
+    const s = this.state;
+    const v = s.view;
+    const open = s.opps.filter(o => o.stage !== 'ganada' && o.stage !== 'perdida');
+    const maxStage = Math.max.apply(null, STAGES.map(([k]) => s.opps.filter(o => o.stage === k).reduce((a, o) => a + o.amount_eur, 0)));
+
+    const sellers = s.profiles.filter(p => p.role === 'vendedor' && p.active);
+
+    const oppRow = (o) => ({
+      clientName: CLIENT_NAME[o.client_id] || '—', title: o.title, amount: eur(o.amount_eur),
+      stageLabel: STAGE_LABEL[o.stage], stageTag: stageTag(o.stage),
+      ownerName: (this.profile(o.owner_id) || {}).full_name || '—',
+      reassign: () => this.setState({ dialog: 'reassign', reassignId: o.id, form: { new_owner: (sellers.find(p => p.id !== o.owner_id) || {}).id } })
+    });
+
+    const seller = this.profile(s.sellerId);
+    let sellerVals = {};
+    if (seller) {
+      const mine = s.opps.filter(o => o.owner_id === seller.id);
+      sellerVals = {
+        name: seller.full_name, email: seller.email,
+        oppSummary: mine.length + ' oportunidades · ' + eur(mine.reduce((a, o) => a + o.amount_eur, 0)),
+        opps: mine.map(oppRow),
+        tasks: TASKS.filter(t => t.owner_id === seller.id).map(t => ({
+          description: t.description, typeLabel: TYPE_LABEL[t.type],
+          typeTag: 'tag ' + (t.type === 'llamada' ? 'tag-accent' : t.type === 'reunion' ? 'tag-accent-2' : 'tag-neutral'),
+          dueLabel: t.overdue ? 'Vencida · ' + t.due : t.due,
+          dueTag: 'tag ' + (t.overdue ? 'tag-outline' : 'tag-neutral')
+        })),
+        activities: s.activities.filter(a => a.actor_id === seller.id)
+      };
+    }
+
+    const reassignOpp = s.opps.find(o => o.id === s.reassignId);
+    const offUser = this.profile(s.offId);
+
+    return {
+      showOwner: this.props.mostrarDueno ?? true,
+      isLogin: v === 'login', isApp: v !== 'login',
+      isPanel: v === 'panel', isSeller: v === 'seller' && !!seller, isUsers: v === 'users', isResumen: v === 'resumen',
+      login: () => this.setState({ view: 'panel', loginError: false }),
+      logout: () => this.setState({ view: 'login' }),
+      loginError: s.loginError, toggleLoginError: () => this.setState(st => ({ loginError: !st.loginError })),
+
+      navItems: [['panel', 'Panel del equipo'], ['users', 'Usuarios'], ['resumen', 'Resumen matutino']].map(([key, label]) => ({
+        label, go: this.go(key),
+        style: (key === v || (key === 'panel' && v === 'seller')) ? PILL_ON : PILL
+      })),
+
+      pipelineTotalEur: eurShort(open.reduce((a, o) => a + o.amount_eur, 0)),
+      pipelineTotalCount: String(open.length),
+      pipeline: STAGES.map(([key, label]) => {
+        const rows = s.opps.filter(o => o.stage === key);
+        const total = rows.reduce((a, o) => a + o.amount_eur, 0);
+        const pct = maxStage ? Math.max(3, Math.round(total / maxStage * 100)) : 0;
+        return {
+          label, count: String(rows.length), amount: eur(total),
+          barStyle: 'height:100%;width:' + pct + '%;border-radius:999px;background:' + (key === 'ganada' ? 'var(--color-accent)' : key === 'perdida' ? 'var(--color-neutral-400)' : 'var(--color-accent-400)')
+        };
+      }),
+
+      sellers: sellers.map(p => {
+        const t = TASKS.filter(x => x.owner_id === p.id);
+        const od = t.filter(x => x.overdue).length;
+        const mine = s.opps.filter(o => o.owner_id === p.id && o.stage !== 'ganada' && o.stage !== 'perdida');
+        return {
+          name: p.full_name, pending: String(t.length),
+          hasOverdue: od > 0, overdueLabel: od + (od === 1 ? ' vencida' : ' vencidas'),
+          oppLabel: mine.length + (mine.length === 1 ? ' abierta · ' : ' abiertas · ') + eurShort(mine.reduce((a, o) => a + o.amount_eur, 0)),
+          open: this.openSeller(p.id)
+        };
+      }),
+
+      ranking: sellers.map(p => {
+        const won = s.opps.filter(o => o.owner_id === p.id && o.stage === 'ganada');
+        return { id: p.id, name: p.full_name, wonN: won.length, amount: eur(won.reduce((a, o) => a + o.amount_eur, 0)), open: this.openSeller(p.id) };
+      }).sort((a, b) => b.wonN - a.wonN).slice(0, 6).map((r, i) => ({ pos: String(i + 1), name: r.name, won: String(r.wonN), amount: r.amount, open: r.open })),
+
+      backToPanel: this.go('panel'),
+      seller: sellerVals,
+
+      users: s.profiles.map(p => ({
+        fullName: p.full_name, email: p.email,
+        roleLabel: p.role === 'supervisor' ? 'Supervisor' : 'Vendedor',
+        roleTag: 'tag ' + (p.role === 'supervisor' ? 'tag-accent' : 'tag-neutral'),
+        stateLabel: p.active ? 'Activo' : 'Inactivo',
+        stateTag: 'tag ' + (p.active ? 'tag-accent' : 'tag-outline'),
+        canDeactivate: p.active && p.id !== 'p11', canActivate: !p.active,
+        deactivate: () => this.setState({ dialog: 'off', offId: p.id }),
+        activate: () => this.setState(st => ({ profiles: st.profiles.map(x => x.id === p.id ? { ...x, active: true } : x) }))
+      })),
+      usersSummary: s.profiles.length + ' usuarios · ' + s.profiles.filter(p => p.role === 'vendedor').length + ' vendedores · ' + s.profiles.filter(p => p.role === 'supervisor').length + ' supervisores',
+      openNewUser: () => this.setState({ dialog: 'user', form: { role: 'vendedor' }, invalid: false }),
+      roleVendedor: (s.form.role || 'vendedor') === 'vendedor', roleSupervisor: s.form.role === 'supervisor',
+      userInvalid: s.invalid && s.dialog === 'user',
+
+      sendNow: this.sendNow, sending: s.sending, sendLabel: s.sending ? 'Enviando…' : 'Enviar ahora',
+      sentOk: s.sendState === 'ok', sentError: s.sendState === 'error',
+      sendLog: s.sendLog.map(l => ({ when: l.when, kind: l.kind, tag: 'tag ' + (l.kind === 'Manual' ? 'tag-accent-2' : 'tag-neutral') })),
+
+      dlgReassign: s.dialog === 'reassign', dlgUser: s.dialog === 'user', dlgOff: s.dialog === 'off',
+      reassignOppLabel: reassignOpp ? (CLIENT_NAME[reassignOpp.client_id] + ' · ' + reassignOpp.title + ' · ' + eur(reassignOpp.amount_eur)) : '',
+      ownerOptions: sellers.filter(p => !reassignOpp || p.id !== reassignOpp.owner_id).map(p => ({ id: p.id, name: p.full_name })),
+      offLabel: offUser ? offUser.full_name : '', offLabelBtn: s.saving ? 'Desactivando…' : 'Desactivar',
+      closeDialog: this.closeDialog, setField: this.setField, form: s.form, saving: s.saving,
+      saveLabel: s.saving ? 'Guardando…' : 'Guardar',
+      saveReassign: this.saveReassign, saveUser: this.saveUser, saveOff: this.saveOff
+    };
+  }
+}
+
+</script>
+</body>
+</html>

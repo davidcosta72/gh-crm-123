@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-616f3116-4d15-4371-a357-18fd50e77f3f/styles.css">
+<script src="_ds/organic-616f3116-4d15-4371-a357-18fd50e77f3f/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--color-bg); }
+  a { color: var(--color-accent-700); }
+  a:hover { color: var(--color-accent); }
+  @keyframes crmshimmer { 0% { opacity: .45 } 50% { opacity: .9 } 100% { opacity: .45 } }
+</style>
+</helmet>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:grid;place-items:center;padding:var(--space-8);background:var(--color-bg)">
+    <div style="width:min(420px,100%);display:flex;flex-direction:column;gap:var(--space-4)">
+      <div style="display:flex;align-items:baseline;gap:var(--space-2)">
+        <h2 style="margin:0">CRM-123</h2>
+        <span class="tag tag-accent">Ventas</span>
+      </div>
+      <p class="text-muted" style="margin:0;font-size:14px">Acceso solo con la cuenta de Google del equipo.</p>
+      <div class="card elev-sm" style="gap:var(--space-3);padding:var(--space-6)">
+        <button class="btn btn-primary btn-block" onClick="{{ login }}" style="min-height:44px;font-size:15px">Entrar con Google</button>
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:var(--space-2);align-items:flex-start;padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-accent-100)">
+            <div style="width:8px;height:8px;flex:none;margin-top:7px;border-radius:50%;background:var(--color-accent-700)"></div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--color-accent-800)">Acceso no autorizado</div>
+              <div style="font-size:13px;color:var(--color-accent-800);opacity:.85">Esta cuenta no pertenece al equipo. Pide a tu supervisor que te dé de alta.</div>
+            </div>
+          </div>
+        </sc-if>
+        <button class="btn btn-ghost" onClick="{{ toggleLoginError }}" style="align-self:flex-start;font-size:12px">Ver estado de error</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;display:flex;align-items:stretch;background:var(--color-bg);font-family:var(--font-body)">
+
+  <aside style="width:232px;flex:none;display:flex;flex-direction:column;gap:var(--space-6);padding:var(--space-4);background:var(--color-surface);border-radius:0 calc(var(--radius-lg)*1.15) calc(var(--radius-lg)*1.15) 0">
+    <div style="display:flex;align-items:baseline;gap:8px;padding:var(--space-2) var(--space-2) 0">
+      <div style="font-family:var(--font-heading);font-size:20px">CRM-123</div>
+      <span class="tag tag-accent">Ventas</span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:6px">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="4">
+        <button onClick="{{ item.go }}" style="{{ item.style }}">
+          <span>{{ item.label }}</span>
+          <span style="{{ item.badgeStyle }}">{{ item.badge }}</span>
+        </button>
+      </sc-for>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3);border-radius:var(--radius-md);background:var(--color-neutral-100)">
+      <div style="font-size:14px;font-weight:700">Elena Prados</div>
+      <div class="text-muted" style="font-size:12px">elena.prados@crm123.es · Vendedora</div>
+      <button class="btn btn-secondary" onClick="{{ logout }}" style="align-self:flex-start;font-size:12px;padding:4px 12px">Salir</button>
+    </div>
+  </aside>
+
+  <main style="flex:1;min-width:0;padding:var(--space-6) var(--space-8);display:flex;flex-direction:column;gap:var(--space-6)">
+
+    <sc-if value="{{ isTablero }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-6);max-width:1080px">
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">Tablero del día</h3>
+            <div class="text-muted" style="font-size:13px">Lunes, 14/09/2026 · {{ tableroResumen }}</div>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openNewTask }}">Nueva tarea</button>
+        </header>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Tareas de hoy y vencidas</h6>
+          <sc-if value="{{ hasToday }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <sc-for list="{{ todayTasks }}" as="t" hint-placeholder-count="4">
+                <div class="card" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--space-3) var(--space-4);padding:var(--space-3) var(--space-4)">
+                  <div style="flex:none;display:flex;align-items:center;gap:var(--space-3)">
+                    <span class="{{ t.typeTag }}" style="white-space:nowrap">{{ t.typeLabel }}</span>
+                    <span style="font-size:14px;font-weight:700;white-space:nowrap">{{ t.time }}</span>
+                    <sc-if value="{{ t.overdue }}" hint-placeholder-val="{{ false }}">
+                      <span class="tag tag-outline" style="white-space:nowrap">{{ t.overdueLabel }}</span>
+                    </sc-if>
+                  </div>
+                  <div style="flex:1 1 220px;min-width:0">
+                    <div style="font-size:14px;text-wrap:pretty">{{ t.description }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ t.oppLabel }}</div>
+                  </div>
+                  <button class="btn btn-secondary" onClick="{{ t.complete }}" style="flex:none;margin-left:auto">Completar</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ todayEmpty }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="align-items:flex-start;gap:var(--space-3);padding:var(--space-8);text-align:left">
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent-2-200)"></div>
+              <div style="font-family:var(--font-heading);font-size:20px">No tienes tareas pendientes hoy</div>
+              <p class="text-muted" style="margin:0;font-size:14px">Cuando cierres una llamada o acuerdes una reunión, regístrala aquí.</p>
+              <button class="btn btn-primary" onClick="{{ openNewTask }}">Crear una tarea</button>
+            </div>
+          </sc-if>
+        </section>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Oportunidades sin actividad reciente</h6>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--space-3)">
+            <sc-for list="{{ staleOpps }}" as="o" hint-placeholder-count="3">
+              <button class="card elev-sm" onClick="{{ o.open }}" style="border:0;text-align:left;cursor:pointer;gap:6px;background:var(--color-surface)">
+                <div class="card-kicker">{{ o.daysLabel }}</div>
+                <div class="card-title">{{ o.clientName }}</div>
+                <div style="font-size:13px">{{ o.title }}</div>
+                <div class="card-meta"><span class="{{ o.stageTag }}">{{ o.stageLabel }}</span><span>{{ o.amount }}</span></div>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOppList }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">Oportunidades</h3>
+            <div class="text-muted" style="font-size:13px">{{ oppCountLabel }}</div>
+          </div>
+        </header>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ stageFilters }}" as="f" hint-placeholder-count="7">
+            <button onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</button>
+          </sc-for>
+        </div>
+        <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Cliente</th><th>Título</th><th style="text-align:right;white-space:nowrap">Valor</th><th>Etapa</th><th style="white-space:nowrap">Última actividad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ oppRows }}" as="o" hint-placeholder-count="8">
+                <tr onClick="{{ o.open }}" style="cursor:pointer">
+                  <td style="font-weight:700">{{ o.clientName }}</td>
+                  <td>{{ o.title }}</td>
+                  <td style="text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap">{{ o.amount }}</td>
+                  <td><span class="{{ o.stageTag }}" style="white-space:nowrap">{{ o.stageLabel }}</span></td>
+                  <td class="text-muted" style="font-size:13px">{{ o.lastActivity }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOppDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-6);max-width:1080px">
+        <button class="btn btn-ghost" onClick="{{ backToOpps }}" style="align-self:flex-start">← Oportunidades</button>
+        <header style="display:flex;flex-direction:column;gap:var(--space-2)">
+          <div class="card-kicker">{{ opp.clientName }}</div>
+          <h3 style="margin:0">{{ opp.title }}</h3>
+          <div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">
+            <span class="{{ opp.stageTag }}">{{ opp.stageLabel }}</span>
+            <div style="font-family:var(--font-heading);font-size:25px">{{ opp.amount }}</div>
+          </div>
+        </header>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <h6 style="margin:0">Cambiar etapa</h6>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <sc-for list="{{ stageOptions }}" as="s" hint-placeholder-count="6">
+              <button onClick="{{ s.go }}" disabled="{{ s.disabled }}" style="{{ s.style }}">{{ s.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ opp.isLost }}" hint-placeholder-val="{{ false }}">
+            <div class="field" style="max-width:520px">
+              <label>Motivo de pérdida</label>
+              <textarea class="input" style="border-radius:var(--radius-md)" value="{{ opp.lossReason }}" onChange="{{ editLossReason }}"></textarea>
+            </div>
+          </sc-if>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);align-items:start">
+          <section class="card" style="gap:var(--space-3)">
+            <h6 style="margin:0">Datos</h6>
+            <sc-for list="{{ opp.fields }}" as="f" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;gap:var(--space-3);font-size:14px;padding-bottom:6px;border-bottom:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <span class="text-muted">{{ f.label }}</span>
+                <span style="text-align:right">{{ f.value }}</span>
+              </div>
+            </sc-for>
+          </section>
+
+          <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <h6 style="margin:0">Historial de actividad</h6>
+            <sc-if value="{{ opp.hasActivity }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:var(--space-3);padding-left:var(--space-3);border-left:2px solid var(--color-accent-300)">
+                <sc-for list="{{ opp.activities }}" as="a" hint-placeholder-count="5">
+                  <div>
+                    <div style="font-size:14px">{{ a.text }}</div>
+                    <div class="text-muted" style="font-size:12px">{{ a.when }} · {{ a.actor }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ opp.noActivity }}" hint-placeholder-val="{{ false }}">
+              <div class="card" style="gap:6px">
+                <div style="font-family:var(--font-heading);font-size:17px">Aún no hay actividad registrada</div>
+                <p class="text-muted" style="margin:0;font-size:13px">El historial se llenará solo al completar tareas o mover la etapa.</p>
+              </div>
+            </sc-if>
+          </section>
+        </div>
+
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)">
+            <h6 style="margin:0">Tareas de esta oportunidad</h6>
+            <button class="btn btn-secondary" onClick="{{ openNewTask }}">Nueva tarea</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <sc-for list="{{ opp.tasks }}" as="t" hint-placeholder-count="3">
+              <div class="card" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--space-3) var(--space-4);padding:var(--space-3) var(--space-4)">
+                <span class="{{ t.typeTag }}" style="flex:none">{{ t.typeLabel }}</span>
+                <div style="flex:1 1 240px;min-width:0;font-size:14px;text-wrap:pretty">{{ t.description }}</div>
+                <div class="text-muted" style="font-size:13px;white-space:nowrap">{{ t.dueLabel }}</div>
+                <span class="{{ t.statusTag }}" style="white-space:nowrap">{{ t.statusLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isClientList }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">Clientes</h3>
+            <div class="text-muted" style="font-size:13px">{{ clientCountLabel }}</div>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openNewClient }}">Nuevo cliente</button>
+        </header>
+        <input class="input" style="max-width:420px" placeholder="Buscar por empresa, contacto o teléfono" value="{{ search }}" onChange="{{ setSearch }}">
+        <sc-if value="{{ hasClients }}" hint-placeholder-val="{{ true }}">
+          <div class="card" style="padding:var(--space-3) var(--space-4);overflow-x:auto">
+            <table class="table">
+              <thead>
+                <tr><th>Empresa</th><th>Contacto</th><th>Teléfono</th><th style="white-space:nowrap">País / C.P.</th><th style="text-align:right;white-space:nowrap">Oportunidades</th></tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ clientRows }}" as="c" hint-placeholder-count="8">
+                  <tr onClick="{{ c.open }}" style="cursor:pointer">
+                    <td style="font-weight:700">{{ c.companyName }}</td>
+                    <td>{{ c.contactName }}</td>
+                    <td style="font-variant-numeric:tabular-nums;white-space:nowrap">{{ c.phone }}</td>
+                    <td class="text-muted" style="font-size:13px;white-space:nowrap">{{ c.place }}</td>
+                    <td style="text-align:right;white-space:nowrap">{{ c.oppCount }}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+        <sc-if value="{{ clientsEmpty }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="align-items:flex-start;gap:var(--space-3);padding:var(--space-8)">
+            <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent-200)"></div>
+            <div style="font-family:var(--font-heading);font-size:20px">{{ clientsEmptyTitle }}</div>
+            <p class="text-muted" style="margin:0;font-size:14px">El teléfono es el identificador del cliente; basta con la empresa y un número.</p>
+            <button class="btn btn-primary" onClick="{{ openNewClient }}">Crear un cliente</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isClientDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-6);max-width:1080px">
+        <button class="btn btn-ghost" onClick="{{ backToClients }}" style="align-self:flex-start">← Clientes</button>
+        <header>
+          <h3 style="margin:0">{{ client.companyName }}</h3>
+          <div class="text-muted" style="font-size:14px">{{ client.contactName }} · {{ client.phone }}</div>
+        </header>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-6);align-items:start">
+          <section class="card" style="gap:var(--space-3)">
+            <h6 style="margin:0">Ficha</h6>
+            <sc-for list="{{ client.fields }}" as="f" hint-placeholder-count="6">
+              <div style="display:flex;justify-content:space-between;gap:var(--space-3);font-size:14px;padding-bottom:6px;border-bottom:1px solid color-mix(in srgb, var(--color-text) 8%, transparent)">
+                <span class="text-muted">{{ f.label }}</span>
+                <span style="text-align:right">{{ f.value }}</span>
+              </div>
+            </sc-for>
+          </section>
+          <section class="card" style="gap:var(--space-3)">
+            <h6 style="margin:0">Notas</h6>
+            <p style="margin:0;font-size:14px;text-wrap:pretty">{{ client.notes }}</p>
+          </section>
+        </div>
+        <section style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap">
+            <h6 style="margin:0">Oportunidades de este cliente</h6>
+            <button class="btn btn-primary" onClick="{{ openNewOpp }}">Nueva oportunidad</button>
+          </div>
+          <sc-if value="{{ client.hasOpps }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:var(--space-3)">
+              <sc-for list="{{ client.opps }}" as="o" hint-placeholder-count="2">
+                <button class="card elev-sm" onClick="{{ o.open }}" style="border:0;text-align:left;cursor:pointer;gap:6px">
+                  <div class="card-title">{{ o.title }}</div>
+                  <div class="card-meta"><span class="{{ o.stageTag }}">{{ o.stageLabel }}</span><span>{{ o.amount }}</span></div>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ client.noOpps }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="gap:6px">
+              <div style="font-family:var(--font-heading);font-size:17px">Este cliente aún no tiene oportunidades</div>
+              <p class="text-muted" style="margin:0;font-size:13px">Crea la primera y quedará vinculada a esta ficha.</p>
+            </div>
+          </sc-if>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:var(--space-4);max-width:1000px">
+        <header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">
+          <div>
+            <h3 style="margin:0">Tareas</h3>
+            <div class="text-muted" style="font-size:13px">{{ taskCountLabel }}</div>
+          </div>
+          <button class="btn btn-primary" onClick="{{ openNewTask }}">Nueva tarea</button>
+        </header>
+        <div style="display:flex;gap:6px">
+          <sc-for list="{{ taskFilters }}" as="f" hint-placeholder-count="2">
+            <button onClick="{{ f.go }}" style="{{ f.style }}">{{ f.label }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasTaskRows }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <sc-for list="{{ taskRows }}" as="t" hint-placeholder-count="6">
+              <div class="card" style="flex-direction:row;flex-wrap:wrap;align-items:center;gap:var(--space-3) var(--space-4);padding:var(--space-3) var(--space-4)">
+                <span class="{{ t.typeTag }}" style="flex:none;white-space:nowrap">{{ t.typeLabel }}</span>
+                <div style="flex:1 1 220px;min-width:0">
+                  <div style="font-size:14px;text-wrap:pretty">{{ t.description }}</div>
+                  <div class="text-muted" style="font-size:12px">{{ t.oppLabel }} · {{ t.dueLabel }}</div>
+                </div>
+                <div style="flex:none;margin-left:auto">
+                  <sc-if value="{{ t.pending }}" hint-placeholder-val="{{ true }}">
+                    <button class="btn btn-secondary" onClick="{{ t.complete }}">Completar</button>
+                  </sc-if>
+                  <sc-if value="{{ t.done }}" hint-placeholder-val="{{ false }}">
+                    <span class="tag tag-accent-2" style="white-space:nowrap">Completada {{ t.completedAt }}</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ tasksEmpty }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="align-items:flex-start;gap:var(--space-3);padding:var(--space-8)">
+            <div style="width:44px;height:44px;border-radius:50%;background:var(--color-accent-200)"></div>
+            <div style="font-family:var(--font-heading);font-size:20px">{{ tasksEmptyTitle }}</div>
+            <button class="btn btn-primary" onClick="{{ openNewTask }}">Crear una tarea</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </main>
+</div>
+</sc-if>
+
+<sc-if value="{{ dlgLoss }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Marcar como perdida</div>
+      <div class="dialog-body">Indica el motivo antes de guardar. Queda en el historial de la oportunidad.</div>
+      <div class="field">
+        <label>Motivo de pérdida (obligatorio)</label>
+        <textarea class="input" style="border-radius:var(--radius-md)" name="loss_reason" placeholder="Precio por encima del competidor, decisión aplazada…" value="{{ form.loss_reason }}" onChange="{{ setField }}"></textarea>
+      </div>
+      <sc-if value="{{ lossInvalid }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px;color:var(--color-accent-800)">Sin motivo no se puede guardar el cambio.</div>
+      </sc-if>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveLoss }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ dlgTask }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Nueva tarea</div>
+      <div class="field">
+        <label>Tipo</label>
+        <div class="seg">
+          <label class="seg-opt"><input type="radio" name="task_type" value="llamada" checked="{{ typeLlamada }}" onChange="{{ setField }}">Llamada</label>
+          <label class="seg-opt"><input type="radio" name="task_type" value="reunion" checked="{{ typeReunion }}" onChange="{{ setField }}">Reunión</label>
+          <label class="seg-opt"><input type="radio" name="task_type" value="tarea" checked="{{ typeTarea }}" onChange="{{ setField }}">Tarea</label>
+        </div>
+      </div>
+      <div class="field">
+        <label>Descripción</label>
+        <input class="input" name="description" placeholder="Llamar para confirmar el presupuesto" value="{{ form.description }}" onChange="{{ setField }}">
+      </div>
+      <div style="display:flex;gap:var(--space-3)">
+        <div class="field" style="flex:1">
+          <label>Fecha</label>
+          <input class="input" name="due_date" value="{{ form.due_date }}" onChange="{{ setField }}">
+        </div>
+        <div class="field" style="width:110px">
+          <label>Hora</label>
+          <input class="input" name="due_time" value="{{ form.due_time }}" onChange="{{ setField }}">
+        </div>
+      </div>
+      <div class="field">
+        <label>Oportunidad asociada (opcional)</label>
+        <select class="input" name="opportunity_id" value="{{ form.opportunity_id }}" onChange="{{ setField }}">
+          <option value="">Sin oportunidad</option>
+          <sc-for list="{{ oppOptions }}" as="o" hint-placeholder-count="4">
+            <option value="{{ o.id }}">{{ o.label }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveTask }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ dlgClient }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog" style="width:min(520px,100%)">
+      <div class="dialog-title">Nuevo cliente</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+        <div class="field" style="grid-column:1 / -1">
+          <label>Empresa</label>
+          <input class="input" name="company_name" value="{{ form.company_name }}" onChange="{{ setField }}">
+        </div>
+        <div class="field">
+          <label>Persona de contacto</label>
+          <input class="input" name="contact_name" value="{{ form.contact_name }}" onChange="{{ setField }}">
+        </div>
+        <div class="field">
+          <label>Teléfono (obligatorio)</label>
+          <input class="input" name="phone" placeholder="+34 600 000 000" value="{{ form.phone }}" onChange="{{ setField }}">
+        </div>
+        <div class="field">
+          <label>Correo (opcional)</label>
+          <input class="input" name="email" value="{{ form.email }}" onChange="{{ setField }}">
+        </div>
+        <div class="field">
+          <label>País</label>
+          <input class="input" name="country" value="{{ form.country }}" onChange="{{ setField }}">
+        </div>
+        <div class="field">
+          <label>Código postal</label>
+          <input class="input" name="postal_code" value="{{ form.postal_code }}" onChange="{{ setField }}">
+        </div>
+        <div class="field" style="grid-column:1 / -1">
+          <label>Notas</label>
+          <textarea class="input" style="border-radius:var(--radius-md)" name="notes" value="{{ form.notes }}" onChange="{{ setField }}"></textarea>
+        </div>
+      </div>
+      <sc-if value="{{ clientInvalid }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:13px;color:var(--color-accent-800)">Empresa y teléfono son obligatorios.</div>
+      </sc-if>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveClient }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ dlgOpp }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop">
+    <div class="dialog">
+      <div class="dialog-title">Nueva oportunidad</div>
+      <div class="dialog-body">Cliente: {{ client.companyName }}</div>
+      <div class="field">
+        <label>Título</label>
+        <input class="input" name="title" placeholder="Renovación de maquinaria" value="{{ form.title }}" onChange="{{ setField }}">
+      </div>
+      <div style="display:flex;gap:var(--space-3)">
+        <div class="field" style="flex:1">
+          <label>Valor (EUR)</label>
+          <input class="input" name="amount_eur" placeholder="12500" value="{{ form.amount_eur }}" onChange="{{ setField }}">
+        </div>
+        <div class="field" style="flex:1">
+          <label>Origen</label>
+          <select class="input" name="source" value="{{ form.source }}" onChange="{{ setField }}">
+            <option value="referido">Referido</option>
+            <option value="web">Web</option>
+            <option value="llamada_fria">Llamada fría</option>
+            <option value="evento">Evento</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-body">Se crea en etapa <strong>Nuevo</strong> y a tu nombre.</div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeDialog }}">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ saveOpp }}" disabled="{{ saving }}">{{ saveLabel }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:860}}">
+const STAGES = [
+  ['nuevo', 'Nuevo'], ['contactado', 'Contactado'], ['propuesta_enviada', 'Propuesta enviada'],
+  ['negociacion', 'Negociación'], ['ganada', 'Ganada'], ['perdida', 'Perdida']
+];
+const STAGE_LABEL = Object.fromEntries(STAGES);
+const SOURCE_LABEL = { referido: 'Referido', web: 'Web', llamada_fria: 'Llamada fría', evento: 'Evento', otro: 'Otro' };
+const TYPE_LABEL = { llamada: 'Llamada', reunion: 'Reunión', tarea: 'Tarea' };
+
+const CLIENTS = [
+  { id: 'c1', company_name: 'Talleres Nogueira S.L.', contact_name: 'Marta Nogueira', phone: '+34 986 214 330', email: 'marta@nogueira.es', country: 'España', postal_code: '36208', notes: 'Contacto de la feria de Vigo. Prefiere llamadas antes de las 11:00. Trabaja con dos proveedores más.' },
+  { id: 'c2', company_name: 'Panadería El Trigal', contact_name: 'Andrés Ruiz de la Vega', phone: '+34 915 442 108', email: 'pedidos@eltrigal.es', country: 'España', postal_code: '28045', notes: 'Tres locales en Madrid sur. Decide el hijo, no el titular.' },
+  { id: 'c3', company_name: 'Cerámica Alcázar', contact_name: 'Pilar Almonte', phone: '+34 926 553 017', email: '', country: 'España', postal_code: '13600', notes: 'Sin correo: todo por teléfono.' },
+  { id: 'c4', company_name: 'Bodegas Valdeaguilar', contact_name: 'Javier Sarmiento', phone: '+34 941 337 802', email: 'j.sarmiento@valdeaguilar.com', country: 'España', postal_code: '26300', notes: 'Campaña de vendimia: no molestar entre septiembre y octubre.' },
+  { id: 'c5', company_name: 'Óptica Lumen', contact_name: 'Nuria Gasset', phone: '+34 963 118 245', email: 'nuria@opticalumen.es', country: 'España', postal_code: '46004', notes: 'Pidió propuesta por escrito con dos escenarios de precio.' },
+  { id: 'c6', company_name: 'Ferretería Mendoza e Hijos', contact_name: 'Luis Mendoza', phone: '+34 952 660 914', email: '', country: 'España', postal_code: '29601', notes: 'Cliente antiguo recuperado. Muy sensible al precio.' },
+  { id: 'c7', company_name: 'Clínica Dental Sant Jordi', contact_name: 'Roser Camps', phone: '+34 934 507 661', email: 'r.camps@santjordi.cat', country: 'España', postal_code: '08015', notes: 'Responde antes por correo que por teléfono.' },
+  { id: 'c8', company_name: 'Transportes Arenales', contact_name: 'Diego Arenales', phone: '+34 954 229 083', email: 'diego@transportesarenales.es', country: 'España', postal_code: '41010', notes: 'Flota de 18 vehículos. Renueva contratos en enero.' }
+];
+
+const OPPS = [
+  { id: 'o1', client_id: 'c1', title: 'Renovación de maquinaria de taller', stage: 'negociacion', amount_eur: 28400, source: 'evento', created_at: '02/07/2026', last: 'Ayer', stale: 0 },
+  { id: 'o2', client_id: 'c2', title: 'Equipamiento del tercer local', stage: 'propuesta_enviada', amount_eur: 15750.5, source: 'referido', created_at: '18/07/2026', last: 'Hace 2 días', stale: 0 },
+  { id: 'o3', client_id: 'c3', title: 'Horno de esmaltado', stage: 'contactado', amount_eur: 9200, source: 'llamada_fria', created_at: '21/08/2026', last: 'Hace 11 días', stale: 11 },
+  { id: 'o4', client_id: 'c4', title: 'Línea de embotellado', stage: 'propuesta_enviada', amount_eur: 62000, source: 'referido', created_at: '05/06/2026', last: 'Hace 8 días', stale: 8 },
+  { id: 'o5', client_id: 'c5', title: 'Dos gabinetes de graduación', stage: 'nuevo', amount_eur: 7480, source: 'web', created_at: '09/09/2026', last: 'Hace 6 días', stale: 6 },
+  { id: 'o6', client_id: 'c6', title: 'Sustitución de estanterías', stage: 'ganada', amount_eur: 4320, source: 'otro', created_at: '14/05/2026', last: 'Hace 4 días' },
+  { id: 'o7', client_id: 'c7', title: 'Segunda sala de tratamiento', stage: 'perdida', amount_eur: 31500, source: 'web', created_at: '11/04/2026', last: 'Hace 21 días', loss_reason: 'Aplazaron la obra a 2027 por falta de licencia municipal.' },
+  { id: 'o8', client_id: 'c8', title: 'Mantenimiento de flota 2027', stage: 'contactado', amount_eur: 45900, source: 'referido', created_at: '28/08/2026', last: 'Hoy', stale: 0 },
+  { id: 'o9', client_id: 'c2', title: 'Obrador central', stage: 'nuevo', amount_eur: 22000, source: 'referido', created_at: '12/09/2026', last: '—', stale: 0, fresh: true },
+  { id: 'o10', client_id: 'c4', title: 'Etiquetadora de reserva', stage: 'ganada', amount_eur: 11250, source: 'evento', created_at: '03/03/2026', last: 'Hace 30 días' }
+];
+
+const TASKS = [
+  { id: 't1', type: 'llamada', status: 'pendiente', description: 'Confirmar condiciones de pago del pedido', opportunity_id: 'o1', due_date: '14/09/2026', due_time: '09:30', overdue: false },
+  { id: 't2', type: 'reunion', status: 'pendiente', description: 'Visita al obrador con el hijo del titular', opportunity_id: 'o2', due_date: '14/09/2026', due_time: '11:00', overdue: false },
+  { id: 't3', type: 'llamada', status: 'pendiente', description: 'Devolver llamada a Pilar sobre el plazo de entrega', opportunity_id: 'o3', due_date: '11/09/2026', due_time: '17:00', overdue: true },
+  { id: 't4', type: 'tarea', status: 'pendiente', description: 'Preparar comparativa de precios para Ferretería Mendoza', opportunity_id: null, due_date: '14/09/2026', due_time: '16:00', overdue: false },
+  { id: 't5', type: 'reunion', status: 'pendiente', description: 'Firma del contrato de mantenimiento', opportunity_id: 'o8', due_date: '12/09/2026', due_time: '10:00', overdue: true },
+  { id: 't6', type: 'llamada', status: 'pendiente', description: 'Segundo intento con Óptica Lumen', opportunity_id: 'o5', due_date: '15/09/2026', due_time: '12:30', overdue: false },
+  { id: 't7', type: 'tarea', status: 'completada', description: 'Enviar propuesta con los dos escenarios de precio', opportunity_id: 'o5', due_date: '09/09/2026', due_time: '18:00', completed_at: '09/09/2026 17:12' },
+  { id: 't8', type: 'llamada', status: 'completada', description: 'Presentación de la línea de embotellado', opportunity_id: 'o4', due_date: '06/09/2026', due_time: '09:00', completed_at: '06/09/2026 09:41' },
+  { id: 't9', type: 'tarea', status: 'completada', description: 'Cerrar acta de entrega de estanterías', opportunity_id: 'o6', due_date: '10/09/2026', due_time: '13:00', completed_at: '10/09/2026 12:55' }
+];
+
+const ACTIVITIES = [
+  { id: 'a1', opportunity_id: 'o1', event_type: 'opportunity_stage_changed', text: 'Etapa cambiada: Propuesta enviada → Negociación', when: '13/09/2026 16:20', actor: 'Elena Prados' },
+  { id: 'a2', opportunity_id: 'o1', event_type: 'task_completed', text: 'Reunión completada: revisión técnica en el taller', when: '11/09/2026 12:05', actor: 'Elena Prados' },
+  { id: 'a3', opportunity_id: 'o1', event_type: 'task_created', text: 'Tarea creada: confirmar condiciones de pago', when: '11/09/2026 12:07', actor: 'Elena Prados' },
+  { id: 'a4', opportunity_id: 'o1', event_type: 'opportunity_stage_changed', text: 'Etapa cambiada: Contactado → Propuesta enviada', when: '28/08/2026 10:14', actor: 'Elena Prados' },
+  { id: 'a5', opportunity_id: 'o1', event_type: 'opportunity_reassigned', text: 'Oportunidad reasignada de Rubén Ortiz a Elena Prados', when: '15/07/2026 08:50', actor: 'Carmen Ibáñez' },
+  { id: 'a6', opportunity_id: 'o2', event_type: 'task_created', text: 'Tarea creada: visita al obrador', when: '12/09/2026 09:00', actor: 'Elena Prados' },
+  { id: 'a7', opportunity_id: 'o2', event_type: 'opportunity_stage_changed', text: 'Etapa cambiada: Contactado → Propuesta enviada', when: '01/09/2026 11:30', actor: 'Elena Prados' },
+  { id: 'a8', opportunity_id: 'o3', event_type: 'opportunity_stage_changed', text: 'Etapa cambiada: Nuevo → Contactado', when: '03/09/2026 15:40', actor: 'Elena Prados' },
+  { id: 'a9', opportunity_id: 'o4', event_type: 'task_completed', text: 'Llamada completada: presentación de la línea', when: '06/09/2026 09:41', actor: 'Elena Prados' },
+  { id: 'a10', opportunity_id: 'o5', event_type: 'task_completed', text: 'Tarea completada: propuesta con dos escenarios', when: '09/09/2026 17:12', actor: 'Elena Prados' },
+  { id: 'a11', opportunity_id: 'o7', event_type: 'opportunity_stage_changed', text: 'Etapa cambiada: Negociación → Perdida', when: '24/08/2026 18:02', actor: 'Elena Prados' },
+  { id: 'a12', opportunity_id: 'o8', event_type: 'task_created', text: 'Tarea creada: firma del contrato', when: '14/09/2026 08:10', actor: 'Elena Prados' }
+];
+
+const eur = (v) => (v === null || v === undefined || v === '')
+  ? '—'
+  : Number(v).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' }) + ' €';
+
+const stageTag = (s) => 'tag ' + (s === 'ganada' ? 'tag-accent-2' : s === 'perdida' ? 'tag-outline' : (s === 'propuesta_enviada' || s === 'negociacion') ? 'tag-accent' : 'tag-neutral');
+
+const PILL = 'font-family:var(--font-body);font-size:13px;cursor:pointer;padding:6px 14px;border-radius:999px;border:1px solid var(--color-divider);background:transparent;color:var(--color-text)';
+const PILL_ON = 'font-family:var(--font-body);font-size:13px;cursor:pointer;padding:6px 14px;border-radius:999px;border:1px solid var(--color-accent);background:var(--color-accent);color:var(--color-bg)';
+const NAV = 'display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;font-family:var(--font-body);font-size:15px;cursor:pointer;padding:9px 14px;border:0;border-radius:999px;background:transparent;color:var(--color-text)';
+const NAV_ON = 'display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;padding:9px 14px;border:0;border-radius:999px;background:var(--color-accent);color:var(--color-bg)';
+const BADGE = 'font-size:11px;padding:1px 8px;border-radius:999px;background:var(--color-accent-200);color:var(--color-accent-800)';
+const BADGE_ON = 'font-size:11px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb, #ffffff 80%, transparent);color:var(--color-accent-800)';
+
+class Component extends DCLogic {
+  state = {
+    view: 'login', loginError: false,
+    clients: CLIENTS, opps: OPPS, tasks: TASKS, activities: ACTIVITIES,
+    oppId: null, clientId: null, stageFilter: 'todas', taskFilter: 'pendiente', search: '',
+    dialog: null, form: {}, saving: false, invalid: false, seq: 1
+  };
+
+  go = (view) => () => this.setState({ view });
+  client = (id) => this.state.clients.find(c => c.id === id);
+  opp = (id) => this.state.opps.find(o => o.id === id);
+  clientName = (o) => { const c = this.client(o.client_id); return c ? c.company_name : '—'; };
+  openOpp = (id) => () => this.setState({ view: 'oppDetail', oppId: id });
+  openClient = (id) => () => this.setState({ view: 'clientDetail', clientId: id });
+
+  logActivity(oppId, event_type, text) {
+    this.setState(s => ({
+      activities: [{ id: 'a' + (100 + s.seq), opportunity_id: oppId, event_type, text, when: '14/09/2026 ' + String(9 + (s.seq % 8)).padStart(2, '0') + ':' + String(10 + s.seq * 3).slice(0, 2), actor: 'Elena Prados' }, ...s.activities],
+      seq: s.seq + 1
+    }));
+  }
+
+  completeTask = (id) => () => {
+    const t = this.state.tasks.find(x => x.id === id);
+    this.setState(s => ({
+      tasks: s.tasks.map(x => x.id === id ? { ...x, status: 'completada', completed_at: '14/09/2026 ' + x.due_time, overdue: false } : x)
+    }));
+    this.logActivity(t.opportunity_id, 'task_completed', TYPE_LABEL[t.type] + ' completada: ' + t.description);
+  };
+
+  setStage = (stage) => () => {
+    const o = this.opp(this.state.oppId);
+    if (!o || o.stage === stage) return;
+    if (stage === 'perdida') { this.setState({ dialog: 'loss', form: { loss_reason: '' }, invalid: false }); return; }
+    this.setState(s => ({ opps: s.opps.map(x => x.id === o.id ? { ...x, stage, loss_reason: null } : x) }));
+    this.logActivity(o.id, 'opportunity_stage_changed', 'Etapa cambiada: ' + STAGE_LABEL[o.stage] + ' → ' + STAGE_LABEL[stage]);
+  };
+
+  setField = (e) => {
+    const { name, value } = e.target;
+    this.setState(s => ({ form: { ...s.form, [name]: value } }));
+  };
+
+  closeDialog = () => this.setState({ dialog: null, form: {}, invalid: false, saving: false });
+
+  finish(fn) {
+    this.setState({ saving: true });
+    setTimeout(() => { fn(); this.setState({ dialog: null, form: {}, saving: false, invalid: false }); }, 700);
+  }
+
+  saveLoss = () => {
+    const reason = (this.state.form.loss_reason || '').trim();
+    if (!reason) { this.setState({ invalid: true }); return; }
+    const o = this.opp(this.state.oppId);
+    this.finish(() => {
+      this.setState(s => ({ opps: s.opps.map(x => x.id === o.id ? { ...x, stage: 'perdida', loss_reason: reason } : x) }));
+      this.logActivity(o.id, 'opportunity_stage_changed', 'Etapa cambiada: ' + STAGE_LABEL[o.stage] + ' → Perdida · ' + reason);
+    });
+  };
+
+  saveTask = () => {
+    const f = this.state.form;
+    const desc = (f.description || '').trim();
+    if (!desc) { this.setState({ invalid: true }); return; }
+    this.finish(() => {
+      const id = 'tn' + this.state.seq;
+      const oppId = f.opportunity_id || null;
+      this.setState(s => ({
+        tasks: [...s.tasks, {
+          id, type: f.task_type || 'llamada', status: 'pendiente', description: desc,
+          opportunity_id: oppId, due_date: f.due_date || '14/09/2026', due_time: f.due_time || '17:00', overdue: false
+        }]
+      }));
+      this.logActivity(oppId, 'task_created', 'Tarea creada: ' + desc);
+    });
+  };
+
+  saveClient = () => {
+    const f = this.state.form;
+    if (!(f.company_name || '').trim() || !(f.phone || '').trim()) { this.setState({ invalid: true }); return; }
+    this.finish(() => {
+      const id = 'cn' + this.state.seq;
+      this.setState(s => ({
+        clients: [{
+          id, company_name: f.company_name.trim(), contact_name: f.contact_name || '', phone: f.phone.trim(),
+          email: f.email || '', country: f.country || 'España', postal_code: f.postal_code || '', notes: f.notes || ''
+        }, ...s.clients],
+        view: 'clientDetail', clientId: id, search: ''
+      }));
+    });
+  };
+
+  saveOpp = () => {
+    const f = this.state.form;
+    if (!(f.title || '').trim()) { this.setState({ invalid: true }); return; }
+    this.finish(() => {
+      const id = 'on' + this.state.seq;
+      this.setState(s => ({
+        opps: [{
+          id, client_id: s.clientId, title: f.title.trim(), stage: 'nuevo',
+          amount_eur: f.amount_eur ? Number(f.amount_eur) : null, source: f.source || 'otro',
+          created_at: '14/09/2026', last: '—', fresh: true
+        }, ...s.opps]
+      }));
+    });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const v = s.view;
+    const pendings = s.tasks.filter(t => t.status === 'pendiente');
+    const today = pendings.filter(t => t.due_date === '14/09/2026' || t.overdue)
+      .sort((a, b) => (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0));
+    const overdueCount = today.filter(t => t.overdue).length;
+
+    const taskRow = (t) => ({
+      id: t.id, description: t.description,
+      typeLabel: TYPE_LABEL[t.type],
+      typeTag: 'tag ' + (t.type === 'llamada' ? 'tag-accent' : t.type === 'reunion' ? 'tag-accent-2' : 'tag-neutral'),
+      time: t.due_time,
+      dueLabel: t.status === 'completada' ? t.completed_at : (t.overdue ? 'Vencida · ' + t.due_date : t.due_date + ' · ' + t.due_time),
+      dueTag: 'tag ' + (t.overdue ? 'tag-outline' : 'tag-neutral'),
+      overdue: !!t.overdue, overdueLabel: 'Vencida · ' + t.due_date,
+      oppLabel: t.opportunity_id ? (() => { const o = this.opp(t.opportunity_id); return o ? this.clientName(o) + ' · ' + o.title : 'Sin oportunidad'; })() : 'Sin oportunidad',
+      pending: t.status === 'pendiente', done: t.status === 'completada', completedAt: t.completed_at || '',
+      statusLabel: t.status === 'completada' ? 'Completada' : 'Pendiente',
+      statusTag: 'tag ' + (t.status === 'completada' ? 'tag-accent-2' : 'tag-neutral'),
+      complete: this.completeTask(t.id)
+    });
+
+    const oppRow = (o) => ({
+      id: o.id, title: o.title, clientName: this.clientName(o), amount: eur(o.amount_eur),
+      stageLabel: STAGE_LABEL[o.stage], stageTag: stageTag(o.stage),
+      lastActivity: o.last || '—', daysLabel: o.stale ? o.stale + ' días sin actividad' : 'Sin actividad reciente',
+      open: this.openOpp(o.id)
+    });
+
+    const stale = s.opps.filter(o => o.stale && o.stale >= 5 && o.stage !== 'ganada' && o.stage !== 'perdida').map(oppRow);
+
+    const navDef = [
+      ['tablero', 'Tablero del día', String(today.length)],
+      ['opps', 'Oportunidades', String(s.opps.filter(o => o.stage !== 'ganada' && o.stage !== 'perdida').length)],
+      ['clients', 'Clientes', String(s.clients.length)],
+      ['tasks', 'Tareas', String(pendings.length)]
+    ];
+    const navActive = { tablero: 'tablero', opps: 'opps', oppDetail: 'opps', clients: 'clients', clientDetail: 'clients', tasks: 'tasks' }[v];
+
+    const filtered = s.stageFilter === 'todas' ? s.opps : s.opps.filter(o => o.stage === s.stageFilter);
+    const q = s.search.trim().toLowerCase();
+    const clientList = q
+      ? s.clients.filter(c => (c.company_name + ' ' + c.contact_name + ' ' + c.phone).toLowerCase().includes(q))
+      : s.clients;
+
+    const detail = this.opp(s.oppId);
+    let oppVals = {};
+    if (detail) {
+      const acts = s.activities.filter(a => a.opportunity_id === detail.id);
+      const linked = s.tasks.filter(t => t.opportunity_id === detail.id).map(taskRow);
+      oppVals = {
+        title: detail.title, clientName: this.clientName(detail), amount: eur(detail.amount_eur),
+        stageLabel: STAGE_LABEL[detail.stage], stageTag: stageTag(detail.stage),
+        isLost: detail.stage === 'perdida', lossReason: detail.loss_reason || '',
+        fields: [
+          { label: 'Cliente', value: this.clientName(detail) },
+          { label: 'Etapa', value: STAGE_LABEL[detail.stage] },
+          { label: 'Valor', value: eur(detail.amount_eur) },
+          { label: 'Origen', value: SOURCE_LABEL[detail.source] },
+          { label: 'Fecha de creación', value: detail.created_at }
+        ].concat(detail.stage === 'perdida' ? [{ label: 'Motivo de pérdida', value: detail.loss_reason || '—' }] : []),
+        activities: acts, hasActivity: acts.length > 0, noActivity: acts.length === 0,
+        tasks: linked
+      };
+    }
+
+    const cl = this.client(s.clientId);
+    let clientVals = {};
+    if (cl) {
+      const opps = s.opps.filter(o => o.client_id === cl.id).map(oppRow);
+      clientVals = {
+        companyName: cl.company_name, contactName: cl.contact_name || 'Sin persona de contacto', phone: cl.phone,
+        notes: cl.notes || 'Sin notas.',
+        fields: [
+          { label: 'Empresa', value: cl.company_name },
+          { label: 'Persona de contacto', value: cl.contact_name || '—' },
+          { label: 'Teléfono', value: cl.phone },
+          { label: 'Correo', value: cl.email || '—' },
+          { label: 'País', value: cl.country },
+          { label: 'Código postal', value: cl.postal_code || '—' }
+        ],
+        opps, hasOpps: opps.length > 0, noOpps: opps.length === 0
+      };
+    }
+
+    const taskListRows = s.tasks.filter(t => t.status === s.taskFilter).map(taskRow);
+
+    return {
+      isLogin: v === 'login', isApp: v !== 'login',
+      isTablero: v === 'tablero', isOppList: v === 'opps', isOppDetail: v === 'oppDetail' && !!detail,
+      isClientList: v === 'clients', isClientDetail: v === 'clientDetail' && !!cl, isTasks: v === 'tasks',
+
+      login: () => this.setState({ view: 'tablero', loginError: false }),
+      logout: () => this.setState({ view: 'login' }),
+      loginError: s.loginError, toggleLoginError: () => this.setState(st => ({ loginError: !st.loginError })),
+
+      navItems: navDef.map(([key, label, badge]) => ({
+        label, badge, go: this.go(key),
+        style: key === navActive ? NAV_ON : NAV,
+        badgeStyle: key === navActive ? BADGE_ON : BADGE
+      })),
+
+      tableroResumen: today.length + (today.length === 1 ? ' tarea para hoy' : ' tareas para hoy') + (overdueCount ? ' · ' + overdueCount + (overdueCount === 1 ? ' vencida' : ' vencidas') : ''),
+      todayTasks: today.map(taskRow), hasToday: today.length > 0, todayEmpty: today.length === 0,
+      staleOpps: stale,
+
+      oppRows: filtered.map(oppRow),
+      oppCountLabel: filtered.length + ' de ' + s.opps.length + ' oportunidades · ' + eur(filtered.reduce((a, o) => a + (Number(o.amount_eur) || 0), 0)),
+      stageFilters: [['todas', 'Todas']].concat(STAGES).map(([key, label]) => ({
+        label, go: () => this.setState({ stageFilter: key }),
+        style: s.stageFilter === key ? PILL_ON : PILL
+      })),
+      stageOptions: STAGES.map(([key, label]) => ({
+        label, go: this.setStage(key), disabled: !!s.saving,
+        style: detail && detail.stage === key ? PILL_ON : PILL
+      })),
+      backToOpps: this.go('opps'), backToClients: this.go('clients'),
+      opp: oppVals,
+      editLossReason: (e) => { const val = e.target.value; this.setState(st => ({ opps: st.opps.map(x => x.id === st.oppId ? { ...x, loss_reason: val } : x) })); },
+
+      clientRows: clientList.map(c => ({
+        companyName: c.company_name, contactName: c.contact_name || '—', phone: c.phone,
+        place: c.country + (c.postal_code ? ' · ' + c.postal_code : ''),
+        oppCount: String(s.opps.filter(o => o.client_id === c.id).length),
+        open: this.openClient(c.id)
+      })),
+      hasClients: clientList.length > 0, clientsEmpty: clientList.length === 0,
+      clientsEmptyTitle: q ? 'Ningún cliente coincide con la búsqueda' : 'Aún no hay clientes registrados',
+      clientCountLabel: clientList.length + (clientList.length === 1 ? ' cliente' : ' clientes'),
+      search: s.search, setSearch: (e) => this.setState({ search: e.target.value }),
+      client: clientVals,
+
+      taskFilters: [['pendiente', 'Pendientes'], ['completada', 'Completadas']].map(([key, label]) => ({
+        label, go: () => this.setState({ taskFilter: key }),
+        style: s.taskFilter === key ? PILL_ON : PILL
+      })),
+      taskRows: taskListRows, hasTaskRows: taskListRows.length > 0, tasksEmpty: taskListRows.length === 0,
+      tasksEmptyTitle: s.taskFilter === 'pendiente' ? 'No tienes tareas registradas' : 'Aún no has completado ninguna tarea',
+      taskCountLabel: pendings.length + ' pendientes · ' + s.tasks.filter(t => t.status === 'completada').length + ' completadas',
+
+      openNewTask: () => this.setState({ dialog: 'task', form: { task_type: 'llamada', due_date: '14/09/2026', due_time: '17:00', opportunity_id: s.oppId || '' }, invalid: false }),
+      openNewClient: () => this.setState({ dialog: 'client', form: { country: 'España' }, invalid: false }),
+      openNewOpp: () => this.setState({ dialog: 'opp', form: { source: 'referido' }, invalid: false }),
+      dlgLoss: s.dialog === 'loss', dlgTask: s.dialog === 'task', dlgClient: s.dialog === 'client', dlgOpp: s.dialog === 'opp',
+      closeDialog: this.closeDialog, setField: this.setField,
+      form: s.form, saving: s.saving, saveLabel: s.saving ? 'Guardando…' : 'Guardar',
+      lossInvalid: s.invalid && s.dialog === 'loss', clientInvalid: s.invalid && s.dialog === 'client',
+      typeLlamada: (s.form.task_type || 'llamada') === 'llamada', typeReunion: s.form.task_type === 'reunion', typeTarea: s.form.task_type === 'tarea',
+      oppOptions: s.opps.map(o => ({ id: o.id, label: this.clientName(o) + ' · ' + o.title })),
+      saveLoss: this.saveLoss, saveTask: this.saveTask, saveClient: this.saveClient, saveOpp: this.saveOpp
+    };
+  }
+}
+
+</script>
+</body>
+</html>
