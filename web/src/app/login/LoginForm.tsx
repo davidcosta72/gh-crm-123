@@ -5,23 +5,27 @@ import { useRouter } from 'next/navigation'
 import { CircleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
+type LoginError = 'credentials' | 'unconfirmed' | null
+
 export function LoginForm({ showUnauthorized }: { showUnauthorized: boolean }) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
-  const [credentialsError, setCredentialsError] = useState(false)
+  const [loginError, setLoginError] = useState<LoginError>(null)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setPending(true)
-    setCredentialsError(false)
+    setLoginError(null)
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setCredentialsError(true)
+      // error.code es más fiable que error.message (que puede cambiar de
+      // redacción); ver @supabase/auth-js GoTrueClient para los valores.
+      setLoginError(error.code === 'email_not_confirmed' ? 'unconfirmed' : 'credentials')
       setPending(false)
       return
     }
@@ -30,11 +34,21 @@ export function LoginForm({ showUnauthorized }: { showUnauthorized: boolean }) {
     router.refresh()
   }
 
-  const errorMessage = credentialsError
-    ? 'Revisa que el correo y la contraseña sean correctos e inténtalo de nuevo.'
-    : showUnauthorized
-      ? 'Esta cuenta no pertenece al equipo. Pide a tu supervisor que te dé de alta.'
-      : null
+  const errorTitle =
+    loginError === 'unconfirmed'
+      ? 'Cuenta sin confirmar'
+      : loginError === 'credentials'
+        ? 'Correo o contraseña incorrectos'
+        : 'Acceso no autorizado'
+
+  const errorMessage =
+    loginError === 'unconfirmed'
+      ? 'Tu cuenta existe pero no está confirmada. Pide a tu supervisor que la confirme desde el panel de Supabase.'
+      : loginError === 'credentials'
+        ? 'Revisa que el correo y la contraseña sean correctos e inténtalo de nuevo.'
+        : showUnauthorized
+          ? 'Esta cuenta no pertenece al equipo. Pide a tu supervisor que te dé de alta.'
+          : null
 
   return (
     <form
@@ -86,9 +100,7 @@ export function LoginForm({ showUnauthorized }: { showUnauthorized: boolean }) {
             style={{ flex: 'none', marginTop: 2, color: 'var(--color-accent-700)' }}
           />
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-800)' }}>
-              {credentialsError ? 'Correo o contraseña incorrectos' : 'Acceso no autorizado'}
-            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-accent-800)' }}>{errorTitle}</div>
             <div style={{ fontSize: 13, color: 'var(--color-accent-800)', opacity: 0.85 }}>{errorMessage}</div>
           </div>
         </div>
